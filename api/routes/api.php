@@ -1,7 +1,8 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\PostController;
+use App\Http\Controllers\Api\PostController;
+use App\Http\Controllers\Api\UserController;
 
 Route::get('/ping', function () {
   return response()->json([
@@ -12,7 +13,13 @@ Route::get('/ping', function () {
 
 Route::apiResource('posts', PostController::class);
 
+Route::post('/login', [UserController::class, 'login'])->name('login');
+
 Route::middleware('auth:sanctum')->group(function () {
     Route::post('/logout', [UserController::class, 'logout']);
     Route::get('/user', [UserController::class, 'show']);
+
+    Route::put('/user', [UserController::class, 'update']);
+    Route::put('/user/password', [UserController::class, 'updatePassword']);
+    Route::post('/user/avatar', [UserController::class, 'updateAvatar']);
 });

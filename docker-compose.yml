@@ -1,6 +1,4 @@
 services:
-
-
   # ======================
   # Laravel API (PHP)
   # ======================
@@ -23,7 +21,7 @@ services:
   # ======================
   frontend:
     image: node:20
-    container_name: front
+    container_name: frontend
     working_dir: /app
     volumes:
       - ./frontend:/app

@@ -1,0 +1,54 @@
+@import url('https://fonts.googleapis.com/css2?family=Crimson+Pro:ital,wght@0,300;0,400;0,600;1,300;1,400;1,600&family=Karla:wght@300;400;500;600&family=Fira+Code:wght@300;400;500&display=swap');
+
+/* ─── Design tokens ───────────────────────────────────────────── */
+:root {
+  /* Safe area insets (notch / barre de statut) */
+  --sat: env(safe-area-inset-top, 0px);
+  --sab: env(safe-area-inset-bottom, 0px);
+  --bg:              #0C0C0E;
+  --surface:         #17171C;
+  --surface-hover:   #1E1E25;
+  --border:          rgba(255, 255, 255, 0.06);
+  --border-hover:    rgba(255, 255, 255, 0.14);
+
+  --accent:          #FF4D6D;
+  --accent-glow:     rgba(255, 77, 109, 0.22);
+  --accent-gold:     #FFD166;
+
+  --text:            #EEEEF3;
+  --text-muted:      #7A7A8C;
+  --text-subtle:     #3A3A4A;
+
+  --radius:          14px;
+  --radius-lg:       22px;
+}
+
+/* ─── Reset ───────────────────────────────────────────────────── */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  height: 100%;
+}
+
+body {
+  height: 100%;
+  font-family: 'Karla', -apple-system, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  overscroll-behavior: none;
+}
+
+input, button, textarea, select {
+  font-family: inherit;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}

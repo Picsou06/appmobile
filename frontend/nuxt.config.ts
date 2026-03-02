@@ -2,14 +2,21 @@
 export default defineNuxtConfig({
   ssr: false,
   compatibilityDate: '2025-07-15',
- 
+
+  css: ['~/assets/css/main.css'],
+
   nitro: {
     preset: 'static'
   },
 
 
   app: {
-    baseURL: './'
+    baseURL: './',
+    head: {
+      meta: [
+        { name: 'viewport', content: 'width=device-width, initial-scale=1, viewport-fit=cover' }
+      ]
+    }
   },
 
 

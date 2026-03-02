@@ -1,32 +1,25 @@
 <script setup>
-const { APP_ENV, WEBAPI_URL, APPAPI_URL } = useRuntimeConfig().public;
-const api_url = ref(null)
-const message = ref('Loading...')
-
-
-api_url.value = APP_ENV === 'mobile' ? APPAPI_URL : WEBAPI_URL
-
+const { token, fetchUser } = useAuth()
+const { public: { APP_ENV, WEBAPI_URL, APPAPI_URL } } = useRuntimeConfig()
 
 onMounted(async () => {
-  try {
-    const res = await fetch(`${api_url.value}/api/ping`)
-    const data = await res.json()
-    message.value = data.message
-  } catch (e) {
-    message.value = 'API ERROR'
+  const apiUrl = APP_ENV === 'mobile' ? APPAPI_URL : WEBAPI_URL
+  console.log(`[AppMobile] === DÉMARRAGE ===`)
+  console.log(`[AppMobile] APP_ENV: ${APP_ENV}`)
+  console.log(`[AppMobile] WEBAPI_URL: ${WEBAPI_URL}`)
+  console.log(`[AppMobile] APPAPI_URL: ${APPAPI_URL}`)
+  console.log(`[AppMobile] URL API utilisée: ${apiUrl}`)
+  console.log(`[AppMobile] Token présent: ${!!token.value}`)
+
+  if (token.value) {
+    await fetchUser()
+  } else {
+    navigateTo('/login')
   }
 })
 </script>
 
 
 <template>
-  <div class="container">
-    <h1>Test API on {{ api_url }}</h1>
-    <p>{{ message }}</p>
-  </div>
+  <NuxtPage />
 </template>
-
-
-<style scoped>
-.container {margin: 40px;}
-</style>
