@@ -18,6 +18,7 @@ class PostFactory extends Factory
     public function definition(): array
     {
         return [
+            'title' => fake()->sentence(4),
             'description' => fake()->sentence(12),
             'image' => fake()->boolean(70)
                 ? 'posts/' . fake()->uuid() . '.jpg'

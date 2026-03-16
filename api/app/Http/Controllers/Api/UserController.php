@@ -117,4 +117,24 @@ class UserController extends Controller
             'avatar' => $path
         ]);
     }
+
+    public function posts(Request $request)
+    {
+        $user = $request->user();
+        return response()->json($user->posts()->paginate(10));
+    }
+
+    public function showPost(Request $request, $id)
+    {
+        $user = $request->user();
+        $post = $user->posts()->find($id);
+   
+        if (!$post) {
+            return response()->json([
+                'message' => 'Post not found'
+            ], 404);
+        }
+   
+        return response()->json($post);
+    }
 }
