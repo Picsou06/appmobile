@@ -3,7 +3,6 @@ const apiUrl = useApiUrl()
 
 const { user, token, fetchUser } = useAuth()
 
-// ─── Profile form ──────────────────────────────────────────────
 const form = reactive({
   firstname: '',
   lastname:  '',
@@ -32,7 +31,6 @@ const updateProfile = async () => {
   profileError.value = false
 }
 
-// ─── Password form ─────────────────────────────────────────────
 const passwordForm = reactive({
   current_password:      '',
   password:              '',
@@ -101,7 +99,7 @@ const initials = computed(() =>
 <template>
   <div class="min-h-screen flex flex-col bg-bg animate-fade-in">
 
-    <AppHeader title="Paramètres" />
+    <AppHeader title="Paramètres" back />
 
     <div class="flex-1 py-6 px-5 flex flex-col gap-5">
 

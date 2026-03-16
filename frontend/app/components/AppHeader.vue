@@ -1,5 +1,7 @@
 <script setup>
-defineProps({ title: String })
+defineProps({ title: String, back: Boolean })
+
+const router = useRouter()
 
 const { public: { APP_ENV, WEBAPI_URL, APPAPI_URL } } = useRuntimeConfig()
 const apiUrl = APP_ENV === 'mobile' ? APPAPI_URL : WEBAPI_URL
@@ -48,13 +50,25 @@ onUnmounted(() => {
     class="sticky top-0 z-20 flex items-center px-5 bg-[rgba(12,12,14,0.9)] backdrop-blur-[16px] border-b border-[var(--border)]"
     style="height: calc(60px + var(--sat)); padding-top: var(--sat)"
   >
-    <!-- Spacer gauche (équilibre l'avatar pour centrer le titre) -->
-    <div class="w-9 shrink-0" />
+    <!-- Bouton retour ou spacer -->
+    <button
+      v-if="back"
+      class="w-9 h-9 flex items-center justify-center text-muted hover:text-body transition-colors duration-150 shrink-0"
+      @click="router.back()"
+    >
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+        <path d="M15 19l-7-7 7-7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" />
+      </svg>
+    </button>
+    <div v-else class="w-9 shrink-0" />
 
     <!-- Titre de la page -->
     <h1 class="flex-1 text-center font-serif text-xl font-normal italic text-body tracking-[-0.3px]">
       {{ title }}
     </h1>
+
+    <!-- Slot actions optionnel (avant l'avatar) -->
+    <slot name="right" />
 
     <!-- Avatar + menu déroulant -->
     <div class="relative shrink-0" ref="containerRef">
@@ -91,7 +105,7 @@ onUnmounted(() => {
 
           <!-- Mon Compte -->
           <NuxtLink
-            to="/account"
+            :to="`/user/${user?.id}`"
             class="flex items-center gap-3 px-4 h-11 text-body text-sm hover:bg-surface-hover transition-colors duration-150"
             @click="closeMenu"
           >

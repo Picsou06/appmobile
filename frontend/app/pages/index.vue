@@ -1,52 +1,20 @@
 <script setup>
-const apiUrl = useApiUrl()
+const { posts, isLoading, hasMore, loadPosts, loadMorePosts } = usePosts()
 
-const { user } = useAuth()
+const sentinel = ref(null)
+let observer = null
 
-let page = 1
-let isLoading = false
-let hasMore = true
+onMounted(async () => {
+	await loadPosts()
 
-const { data: posts } = useFetch(`${apiUrl}/api/posts?page=${page}`, {
-	headers: {
-		Authorization: `Bearer ${user.value?.token}`
-	},
-	transform: (res) => res.data
+	observer = new IntersectionObserver((entries) => {
+		if (entries[0].isIntersecting) loadMorePosts()
+	}, { threshold: 0.1 })
+
+	if (sentinel.value) observer.observe(sentinel.value)
 })
 
-const handleScroll = async () => {
-	if ((window.innerHeight + window.scrollY) >= document.body.offsetHeight - 200) {
-		if (isLoading || !hasMore) return;
-		
-		isLoading = true;
-		page++
-		console.log('Loading page', page)
-		try {
-			const res = await $fetch(`${apiUrl}/api/posts?page=${page}`, {
-				headers: {
-					Authorization: `Bearer ${user.value?.token}`
-				}
-			})
-			if (res && res.data && res.data.length > 0) {
-				posts.value = [...posts.value, ...res.data]
-			} else {
-				hasMore = false;
-			}
-		} catch (error) {
-			console.error(error)
-		} finally {
-			isLoading = false;
-		}
-	}
-}
-
-onMounted(() => {
-	window.addEventListener('scroll', handleScroll)
-})
-
-onUnmounted(() => {
-	window.removeEventListener('scroll', handleScroll)
-})
+onUnmounted(() => observer?.disconnect())
 </script>
 
 
@@ -55,14 +23,26 @@ onUnmounted(() => {
 
 		<AppHeader title="Accueil" />
 
+		<!-- Bouton créer un post -->
+		<NuxtLink to="/post/create" class="fixed bottom-6 right-6 z-30 w-14 h-14 rounded-full bg-accent flex items-center justify-center shadow-[0_8px_32px_var(--accent-glow)] hover:brightness-110 transition-[filter] duration-150">
+			<svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+				<path d="M12 5v14M5 12h14" stroke="white" stroke-width="2" stroke-linecap="round" />
+			</svg>
+		</NuxtLink>
+
 		<main class="flex-1 p-4">
-			<div v-if="posts" class="space-y-4">
-			<div v-for="post in posts" :key="post.id" class="p-4 bg-gray-800 text-white rounded shadow">
-				<h2 class="text-lg font-semibold mb-2">{{ post.title }}</h2>
-				<p class="text-gray-300">{{ post.description?.length > 20 ? post.description.slice(0, 20) + '...' : post.description }}</p>
+			<div v-if="posts.length" class="space-y-4">
+				<PostCard v-for="post in posts" :key="post.id" :post="post" />
 			</div>
+			<div v-else-if="isLoading" class="flex justify-center items-center py-16">
+				<div class="w-8 h-8 rounded-full border-2 border-surface-hover border-t-accent animate-spin" />
 			</div>
-			<div v-else class="text-center text-gray-400">Chargement des posts...</div>
+			<div v-else class="text-center text-muted py-16">Aucun post pour le moment</div>
+
+			<!-- Sentinel + Loader de pagination -->
+			<div ref="sentinel" class="flex justify-center items-center py-8">
+				<div v-if="isLoading" class="w-8 h-8 rounded-full border-2 border-surface-hover border-t-accent animate-spin" />
+			</div>
 		</main>
 
 	</div>

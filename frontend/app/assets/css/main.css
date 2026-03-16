@@ -17,6 +17,18 @@
   html { @apply h-full; }
   body { @apply h-full font-sans bg-bg text-body antialiased overscroll-none; }
   a    { @apply text-inherit no-underline; }
+
+  /* Supprime le fond doré de l'autofill navigateur */
+  input:-webkit-autofill,
+  input:-webkit-autofill:hover,
+  input:-webkit-autofill:focus,
+  textarea:-webkit-autofill,
+  textarea:-webkit-autofill:hover,
+  textarea:-webkit-autofill:focus {
+    -webkit-box-shadow: 0 0 0 1000px #17171C inset !important;
+    -webkit-text-fill-color: #EEEEF3 !important;
+    caret-color: #EEEEF3;
+  }
 }
 
 /* ─── Components ──────────────────────────────────────────────── */
