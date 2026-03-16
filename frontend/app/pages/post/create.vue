@@ -2,22 +2,22 @@
 const router = useRouter()
 const { createPost } = usePosts()
 
-const title       = ref('')
-const description = ref('')
-const imageFile   = ref(null)
+const title        = ref('')
+const description  = ref('')
+const imageFile    = ref(null)
 const imagePreview = ref(null)
 const isSubmitting = ref(false)
 const error        = ref(null)
+const showPicker   = ref(false)
 
-const onFileChange = (e) => {
-	const file = e.target.files[0]
+const onImagePicked = (file) => {
 	if (!file) return
-	imageFile.value = file
+	imageFile.value    = file
 	imagePreview.value = URL.createObjectURL(file)
 }
 
 const removeImage = () => {
-	imageFile.value = null
+	imageFile.value    = null
 	imagePreview.value = null
 }
 
@@ -32,9 +32,9 @@ const submit = async () => {
 
 	try {
 		await createPost({
-			title: title.value,
+			title:       title.value,
 			description: description.value,
-			imageFile: imageFile.value,
+			imageFile:   imageFile.value,
 		})
 		router.push('/')
 	} catch (e) {
@@ -56,20 +56,31 @@ const submit = async () => {
 			<!-- Image -->
 			<div class="flex flex-col gap-2">
 				<label class="text-muted text-xs font-mono uppercase tracking-widest">Photo (optionnel)</label>
-				<label v-if="!imagePreview" class="flex flex-col items-center justify-center w-full h-40 rounded-2xl border border-dashed border-[var(--border)] text-muted hover:border-accent hover:text-accent transition-colors duration-150 cursor-pointer">
+				<button
+					v-if="!imagePreview"
+					type="button"
+					@click="showPicker = true"
+					class="flex flex-col items-center justify-center w-full h-40 rounded-2xl border border-dashed border-[var(--border)] text-muted hover:border-accent hover:text-accent transition-colors duration-150 cursor-pointer"
+				>
 					<svg width="28" height="28" viewBox="0 0 24 24" fill="none" class="mb-2">
 						<path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
 					</svg>
 					<span class="text-sm">Choisir une image</span>
-					<input type="file" accept="image/*" class="hidden" @change="onFileChange" />
-				</label>
+				</button>
 				<div v-else class="relative w-full h-40 rounded-2xl overflow-hidden">
 					<img :src="imagePreview" class="w-full h-full object-cover" />
-					<button @click="removeImage" class="absolute top-2 right-2 w-7 h-7 rounded-full bg-black/60 flex items-center justify-center text-white hover:bg-black/80 transition-colors duration-150">
-						<svg width="14" height="14" viewBox="0 0 24 24" fill="none">
-							<path d="M18 6 6 18M6 6l12 12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-						</svg>
-					</button>
+					<div class="absolute bottom-2 right-2 flex gap-2">
+						<button type="button" @click="showPicker = true" class="w-8 h-8 rounded-full bg-black/60 flex items-center justify-center text-white hover:bg-black/80 transition-colors duration-150">
+							<svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+								<path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+							</svg>
+						</button>
+						<button type="button" @click="removeImage" class="w-8 h-8 rounded-full bg-black/60 flex items-center justify-center text-white hover:bg-black/80 transition-colors duration-150">
+							<svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+								<path d="M18 6 6 18M6 6l12 12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+							</svg>
+						</button>
+					</div>
 				</div>
 			</div>
 
@@ -112,6 +123,8 @@ const submit = async () => {
 			</button>
 
 		</main>
+
+		<ImagePickerSheet v-model="showPicker" @picked="onImagePicked" />
 
 	</div>
 </template>

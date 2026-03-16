@@ -60,7 +60,9 @@ const updatePassword = async () => {
   }
 }
 
-// ─── Avatar upload (shared) ────────────────────────────────────
+// ─── Avatar upload ──────────────────────────────────────────────
+const showAvatarPicker = ref(false)
+
 const postAvatar = async (file) => {
   const formData = new FormData()
   formData.append('avatar', file)
@@ -72,21 +74,8 @@ const postAvatar = async (file) => {
   await fetchUser()
 }
 
-const uploadAvatar = async (event) => {
-  await postAvatar(event.target.files[0])
-}
-
-import { Camera, CameraResultType, CameraSource } from '@capacitor/camera'
-
-const takePicture = async () => {
-  const photo = await Camera.getPhoto({
-    quality: 80,
-    allowEditing: false,
-    resultType: CameraResultType.DataUrl,
-    source: CameraSource.Camera
-  })
-  const blob = await (await fetch(photo.dataUrl)).blob()
-  await postAvatar(new File([blob], 'avatar.jpg', { type: 'image/jpeg' }))
+const onAvatarPicked = async (file) => {
+  if (file) await postAvatar(file)
 }
 
 // ─── Avatar initials ───────────────────────────────────────────
@@ -265,24 +254,19 @@ const initials = computed(() =>
             <span v-else class="font-serif text-[42px] font-normal italic text-white">{{ initials }}</span>
           </div>
 
-          <!-- Web (md+) -->
-          <label class="hidden md:flex items-center gap-2.5 px-6 h-[50px] bg-transparent border-[1.5px] border-[var(--border)] rounded-[14px] text-muted font-sans text-sm font-medium cursor-pointer relative transition-[border-color,color] duration-200 hover:border-accent hover:text-accent">
+          <button
+            @click="showAvatarPicker = true"
+            class="flex items-center gap-2.5 px-6 h-[50px] bg-transparent border-[1.5px] border-[var(--border)] rounded-[14px] text-muted font-sans text-sm font-medium cursor-pointer transition-[border-color,color] duration-200 hover:border-accent hover:text-accent"
+          >
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
-              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
-            </svg>
-            Choisir une photo
-            <input type="file" accept="image/*" class="absolute inset-0 opacity-0 cursor-pointer text-[0]" @change="uploadAvatar" />
-          </label>
-
-          <!-- Mobile (< md) -->
-          <button class="flex md:hidden items-center gap-2.5 px-6 h-[50px] bg-transparent border-[1.5px] border-[var(--border)] rounded-[14px] text-muted font-sans text-sm font-medium cursor-pointer transition-[border-color,color] duration-200 hover:border-accent hover:text-accent" @click="takePicture">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
-              <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z" stroke="currentColor" stroke-width="1.5" />
+              <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/>
               <circle cx="12" cy="13" r="4" stroke="currentColor" stroke-width="1.5" />
             </svg>
-            Prendre une photo
+            Changer la photo
           </button>
         </div>
+
+        <ImagePickerSheet v-model="showAvatarPicker" @picked="onAvatarPicked" />
 
       </section>
 

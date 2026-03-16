@@ -1,8 +1,9 @@
 export const useShare = () => {
   const sharePost = async (post: any) => {
-    const title = `Post de ${post.user?.firstname ?? ''} ${post.user?.lastname ?? ''}`.trim()
-    const text  = post.description ?? ''
-    const url   = `${window.location.origin}/post/${post.id}`
+    const author = `${post.user?.firstname ?? ''} ${post.user?.lastname ?? ''}`.trim()
+    const title  = `🔥 Regarde ce post sur la meilleure app du monde !`
+    const text   = `${author} a posté : "${post.title}" — ${post.description ?? ''}\n\nDécouvre ça sur AppMobile 👇`
+    const url    = `${window.location.origin}/post/${post.id}`
 
     // ── Capacitor Share (Android / iOS) ──────────────────────────
     if (window.Capacitor?.isNativePlatform?.()) {

@@ -1,7 +1,7 @@
 <script setup>
 const props = defineProps({
-	post:  { type: Object,  required: true },
-	mode:  { type: String,  default: 'view' }, // 'view' | 'edit'
+	post:   { type: Object,  required: true },
+	mode:   { type: String,  default: 'view' }, // 'view' | 'edit'
 	saving: { type: Boolean, default: false },
 })
 
@@ -18,27 +18,27 @@ const formattedDate = computed(() => {
 })
 
 // ─── État formulaire (mode edit) ───────────────────────────────
-const title       = ref(props.post.title)
-const description = ref(props.post.description)
-const imageFile   = ref(null)
+const title        = ref(props.post.title)
+const description  = ref(props.post.description)
+const imageFile    = ref(null)
 const imagePreview = ref(null)
+const showPicker   = ref(false)
 
 watch(() => props.post, (p) => {
-	title.value       = p.title
-	description.value = p.description
-	imageFile.value   = null
+	title.value        = p.title
+	description.value  = p.description
+	imageFile.value    = null
 	imagePreview.value = null
 })
 
-const onFileChange = (e) => {
-	const file = e.target.files[0]
+const onImagePicked = (file) => {
 	if (!file) return
-	imageFile.value = file
+	imageFile.value    = file
 	imagePreview.value = URL.createObjectURL(file)
 }
 
 const removeImage = () => {
-	imageFile.value = null
+	imageFile.value    = null
 	imagePreview.value = null
 }
 
@@ -100,22 +100,25 @@ const handleSave = () => {
 						v-if="imagePreview || post.image"
 						class="w-full h-full object-cover"
 					/>
-					<label v-else class="flex flex-col items-center justify-center w-full h-full text-muted cursor-pointer hover:text-accent transition-colors duration-150">
+					<button
+						v-else
+						type="button"
+						@click="showPicker = true"
+						class="flex flex-col items-center justify-center w-full h-full text-muted hover:text-accent transition-colors duration-150"
+					>
 						<svg width="28" height="28" viewBox="0 0 24 24" fill="none" class="mb-1">
 							<path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
 						</svg>
 						<span class="text-sm">Choisir une image</span>
-						<input type="file" accept="image/*" class="hidden" @change="onFileChange" />
-					</label>
+					</button>
 					<!-- Boutons overlay si image présente -->
 					<div v-if="imagePreview || post.image" class="absolute bottom-2 right-2 flex gap-2">
-						<label class="w-8 h-8 rounded-full bg-black/60 flex items-center justify-center text-white cursor-pointer hover:bg-black/80 transition-colors duration-150">
+						<button type="button" @click="showPicker = true" class="w-8 h-8 rounded-full bg-black/60 flex items-center justify-center text-white cursor-pointer hover:bg-black/80 transition-colors duration-150">
 							<svg width="14" height="14" viewBox="0 0 24 24" fill="none">
 								<path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
 							</svg>
-							<input type="file" accept="image/*" class="hidden" @change="onFileChange" />
-						</label>
-						<button v-if="imagePreview" @click="removeImage" class="w-8 h-8 rounded-full bg-black/60 flex items-center justify-center text-white hover:bg-black/80 transition-colors duration-150">
+						</button>
+						<button v-if="imagePreview" type="button" @click="removeImage" class="w-8 h-8 rounded-full bg-black/60 flex items-center justify-center text-white hover:bg-black/80 transition-colors duration-150">
 							<svg width="14" height="14" viewBox="0 0 24 24" fill="none">
 								<path d="M18 6 6 18M6 6l12 12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
 							</svg>
@@ -158,5 +161,7 @@ const handleSave = () => {
 			</div>
 
 		</div>
+
+		<ImagePickerSheet v-model="showPicker" @picked="onImagePicked" />
 	</template>
 </template>
