@@ -3,6 +3,7 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\PostController;
 use App\Http\Controllers\Api\UserController;
+use App\Http\Controllers\Api\AdController;
 
 Route::get('/ping', function () {
   return response()->json([
@@ -16,6 +17,9 @@ Route::get('/users/{user_id}/posts', [PostController::class, 'posts']);
 Route::get('/users/posts/{id}', [PostController::class, 'showPost']);
 
 Route::post('/login', [UserController::class, 'login'])->name('login');
+
+Route::get('/ads', [AdController::class, 'index']);
+Route::get('/ads/{id}', [AdController::class, 'show']);
 
 Route::middleware('auth:sanctum')->group(function () {
 	Route::post('/posts', [PostController::class, 'store']);
@@ -31,4 +35,9 @@ Route::middleware('auth:sanctum')->group(function () {
 
 	Route::get('/user/posts', [UserController::class, 'posts']);
 	Route::get('/user/posts/{id}', [UserController::class, 'showPost']);
+
+	Route::post('/ads', [AdController::class, 'store']);
+	Route::post('/ads/{id}', [AdController::class, 'update']);
+	Route::delete('/ads/{id}', [AdController::class, 'destroy']);
+	Route::get('/user/ads', [AdController::class, 'myAds']);
 });

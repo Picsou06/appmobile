@@ -21,5 +21,7 @@ class DatabaseSeeder extends Seeder
             $post->user_id = $users->random()->id;
             $post->save();
         });
+
+		$this->call(AdSeeder::class);
 	}
 }
