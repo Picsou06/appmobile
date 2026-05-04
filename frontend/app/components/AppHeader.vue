@@ -12,7 +12,6 @@ const initials = computed(() =>
   user.value?.firstname ? user.value.firstname.charAt(0).toUpperCase() : '?'
 )
 
-// ─── Dropdown ──────────────────────────────────────────────────
 const menuOpen   = ref(false)
 const containerRef = ref(null)
 
@@ -50,7 +49,6 @@ onUnmounted(() => {
     class="sticky top-0 z-20 flex items-center px-5 bg-[rgba(12,12,14,0.9)] backdrop-blur-[16px] border-b border-[var(--border)]"
     style="height: calc(60px + var(--sat)); padding-top: var(--sat)"
   >
-    <!-- Bouton retour ou spacer -->
     <button
       v-if="back"
       class="w-9 h-9 flex items-center justify-center text-muted hover:text-body transition-colors duration-150 shrink-0"
@@ -62,18 +60,14 @@ onUnmounted(() => {
     </button>
     <div v-else class="w-9 shrink-0" />
 
-    <!-- Titre de la page -->
     <h1 class="flex-1 text-center font-serif text-xl font-normal italic text-body tracking-[-0.3px]">
       {{ title }}
     </h1>
 
-    <!-- Slot actions optionnel (avant l'avatar) -->
     <slot name="right" />
 
-    <!-- Avatar + menu déroulant -->
     <div class="relative shrink-0" ref="containerRef">
 
-      <!-- Bouton avatar -->
       <button
         class="w-9 h-9 rounded-full bg-accent text-white flex items-center justify-center font-serif text-[15px] italic overflow-hidden transition-[box-shadow] duration-200 hover:shadow-[0_0_0_3px_var(--accent-glow)]"
         :class="menuOpen ? 'shadow-[0_0_0_3px_var(--accent-glow)]' : ''"
@@ -83,7 +77,6 @@ onUnmounted(() => {
         <span v-else>{{ initials }}</span>
       </button>
 
-      <!-- Dropdown -->
       <Transition
         enter-active-class="transition-[opacity,transform] duration-200 ease-out"
         enter-from-class="opacity-0 scale-95 -translate-y-1"
@@ -97,16 +90,14 @@ onUnmounted(() => {
           class="absolute right-0 top-[calc(100%+10px)] w-56 bg-surface border border-[var(--border)] rounded-2xl overflow-hidden shadow-[0_12px_40px_rgba(0,0,0,0.55)] origin-top-right"
         >
 
-          <!-- Info utilisateur -->
           <div class="px-4 py-3 border-b border-[var(--border)]">
             <p class="text-body text-sm font-medium truncate">{{ user?.firstname }} {{ user?.lastname }}</p>
             <p class="text-muted text-[11px] font-mono mt-0.5 truncate">{{ user?.email }}</p>
           </div>
 
-          <!-- Mon Compte -->
           <NuxtLink
             :to="`/user/${user?.id}`"
-            class="flex items-center gap-3 px-4 h-11 text-body text-sm hover:bg-surface-hover transition-colors duration-150"
+            class="menu-item"
             @click="closeMenu"
           >
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" class="text-muted shrink-0">
@@ -116,10 +107,20 @@ onUnmounted(() => {
             Mon Compte
           </NuxtLink>
 
-          <!-- Paramètres -->
+          <NuxtLink
+            to="/ads"
+            class="menu-item"
+            @click="closeMenu"
+          >
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" class="text-muted shrink-0">
+              <path d="M3 5h18M3 10h18M3 15h12M3 20h8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" />
+            </svg>
+            Annonces
+          </NuxtLink>
+
           <NuxtLink
             to="/settings"
-            class="flex items-center gap-3 px-4 h-11 text-body text-sm hover:bg-surface-hover transition-colors duration-150"
+            class="menu-item"
             @click="closeMenu"
           >
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" class="text-muted shrink-0">
@@ -131,7 +132,6 @@ onUnmounted(() => {
 
           <div class="border-t border-[var(--border)]" />
 
-          <!-- Déconnexion -->
           <button
             class="flex items-center gap-3 px-4 h-11 w-full text-left text-accent text-sm hover:bg-surface-hover transition-colors duration-150"
             @click="handleLogout"

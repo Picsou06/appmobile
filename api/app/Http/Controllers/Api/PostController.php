@@ -4,25 +4,18 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 use App\Models\Post;
 
 class PostController extends Controller
 {
-	/**
-	 * Display a listing of the resource.
-	 */
 	public function index(Request $request)
 	{
-		Log::info('Fetching posts for API');
-		Log::info('Request parameters: ' . $request->user());
-		return Post::with('user')->latest()->paginate(10);
+		$posts = Post::with('user')->withCount('likes')->latest()->paginate(10);
+		Post::attachLikedBy($posts, auth('sanctum')->id());
+		return $posts;
 	}
 
-	/**
-	 * Store a newly created resource in storage.
-	 */
 	public function store(Request $request)
 	{
 		$validated = $request->validate([
@@ -47,17 +40,6 @@ class PostController extends Controller
 		return response()->json(['data' => $post->load('user')], 201);
 	}
 
-	/**
-	 * Display the specified resource.
-	 */
-	public function show(string $id)
-	{
-		//
-	}
-
-	/**
-	 * Update the specified resource in storage.
-	 */
 	public function update(Request $request, string $id)
 	{
 		$post = Post::where('id', $id)
@@ -80,9 +62,6 @@ class PostController extends Controller
 		return response()->json(['data' => $post->load('user')]);
 	}
 
-	/**
-	 * Remove the specified resource from storage.
-	 */
 	public function destroy(Request $request, string $id)
 	{
 		$post = Post::where('id', $id)
@@ -99,8 +78,18 @@ class PostController extends Controller
 		return Post::with('user')->where('user_id', $user_id)->latest()->paginate(10);
 	}
 
-	public function showPost($post_id)
+	public function showPost(Request $request, $post_id)
 	{
-		return Post::with('user')->where('id', $post_id)->firstOrFail();
+		$post = Post::with(['user', 'comments.user'])
+			->withCount('likes')
+			->where('id', $post_id)
+			->firstOrFail();
+
+		$userId = auth('sanctum')->id();
+		$post->liked_by_me = $userId
+			? $post->likes()->where('user_id', $userId)->exists()
+			: false;
+
+		return response()->json(['data' => $post]);
 	}
 }

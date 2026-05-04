@@ -1,14 +1,57 @@
-<script setup>
-const props = defineProps({
-	post:   { type: Object,  required: true },
-	mode:   { type: String,  default: 'view' }, // 'view' | 'edit'
-	saving: { type: Boolean, default: false },
+<script setup lang="ts">
+interface Post { [key: string]: any }
+
+const props = withDefaults(defineProps<{
+	post:    Post
+	mode?:   string
+	saving?: boolean
+}>(), {
+	mode:   'view',
+	saving: false,
 })
 
 const emit = defineEmits(['save', 'cancel'])
 
 const apiUrl = useApiUrl()
+const api    = useApi()
+const { user } = useAuth()
+const { notifyLike, notifyComment } = useNotifications()
 const { sharePost } = useShare()
+
+const likesCount  = ref<number>(props.post.likes_count ?? 0)
+const likedByMe   = ref<boolean>(props.post.liked_by_me ?? false)
+
+const toggleLike = async () => {
+	const wasLiked = likedByMe.value
+	likedByMe.value  = !wasLiked
+	likesCount.value += wasLiked ? -1 : 1
+
+	try {
+		await api(`${apiUrl}/api/posts/${props.post.id}/like`, { method: 'POST' })
+		if (!wasLiked) notifyLike(props.post, user.value?.id)
+	} catch {
+		likedByMe.value  = wasLiked
+		likesCount.value += wasLiked ? 1 : -1
+	}
+}
+
+const comments     = ref<any[]>(props.post.comments ?? [])
+const commentBody  = ref('')
+const showComments = ref(false)
+
+const submitComment = async () => {
+	const body = commentBody.value.trim()
+	if (!body) return
+
+	const res: any = await api(`${apiUrl}/api/posts/${props.post.id}/comments`, {
+		method: 'POST',
+		body: JSON.stringify({ body }),
+	})
+	const created = res.data ?? res
+	comments.value = [...comments.value, created]
+	commentBody.value = ''
+	notifyComment(props.post, user.value?.id, user.value?.firstname ?? 'Quelqu\'un')
+}
 
 const formattedDate = computed(() => {
 	if (!props.post?.created_at) return ''
@@ -20,8 +63,8 @@ const formattedDate = computed(() => {
 // ─── État formulaire (mode edit) ───────────────────────────────
 const title        = ref(props.post.title)
 const description  = ref(props.post.description)
-const imageFile    = ref(null)
-const imagePreview = ref(null)
+const imageFile    = ref<File | null>(null)
+const imagePreview = ref<string | null>(null)
 const showPicker   = ref(false)
 
 watch(() => props.post, (p) => {
@@ -31,7 +74,7 @@ watch(() => props.post, (p) => {
 	imagePreview.value = null
 })
 
-const onImagePicked = (file) => {
+const onImagePicked = (file: File | null) => {
 	if (!file) return
 	imageFile.value    = file
 	imagePreview.value = URL.createObjectURL(file)
@@ -74,16 +117,72 @@ const handleSave = () => {
 			<h1 class="text-body font-serif text-2xl font-normal italic leading-snug">{{ post.title }}</h1>
 			<p class="text-muted text-sm leading-relaxed">{{ post.description }}</p>
 
-			<!-- Bouton partager -->
-			<button
-				@click="sharePost(post)"
-				class="flex items-center gap-2 text-muted text-sm hover:text-body transition-colors duration-150"
-			>
-				<svg width="16" height="16" viewBox="0 0 24 24" fill="none">
-					<path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8M16 6l-4-4-4 4M12 2v13" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
-				</svg>
-				Partager
-			</button>
+			<!-- Actions -->
+			<div class="flex items-center gap-4">
+				<!-- Like -->
+				<button
+					@click="toggleLike"
+					class="flex items-center gap-1.5 text-sm transition-colors duration-150"
+					:class="likedByMe ? 'text-accent' : 'text-muted hover:text-body'"
+				>
+					<svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+						<path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"
+							:fill="likedByMe ? 'currentColor' : 'none'"
+							stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+					</svg>
+					{{ likesCount }}
+				</button>
+
+				<!-- Commentaires -->
+				<button
+					@click="showComments = !showComments"
+					class="flex items-center gap-1.5 text-muted text-sm hover:text-body transition-colors duration-150"
+				>
+					<svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+						<path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"
+							stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+					</svg>
+					{{ comments.length }}
+				</button>
+
+				<!-- Partager -->
+				<button
+					@click="sharePost(post)"
+					class="flex items-center gap-1.5 text-muted text-sm hover:text-body transition-colors duration-150 ml-auto"
+				>
+					<svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+						<path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8M16 6l-4-4-4 4M12 2v13" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+					</svg>
+					Partager
+				</button>
+			</div>
+
+			<!-- Section commentaires -->
+			<div v-if="showComments" class="border-t border-[var(--border)] pt-4 space-y-3">
+				<div v-for="c in comments" :key="c.id" class="flex gap-2">
+					<div class="w-7 h-7 rounded-full bg-surface-hover shrink-0 flex items-center justify-center text-xs text-muted font-serif italic">
+						{{ c.user?.firstname?.charAt(0).toUpperCase() ?? '?' }}
+					</div>
+					<div>
+						<p class="text-body text-xs font-medium">{{ c.user?.firstname }} {{ c.user?.lastname }}</p>
+						<p class="text-muted text-sm">{{ c.body }}</p>
+					</div>
+				</div>
+
+				<form @submit.prevent="submitComment" class="flex gap-2 pt-1">
+					<input
+						v-model="commentBody"
+						type="text"
+						placeholder="Ajouter un commentaire…"
+						class="flex-1 bg-surface border border-[var(--border)] rounded-xl px-3 py-2 text-sm text-body placeholder:text-faint outline-none focus:border-accent transition-colors"
+					/>
+					<button
+						type="submit"
+						:disabled="!commentBody.trim()"
+						class="btn-accent h-9 px-4 rounded-xl text-sm disabled:opacity-40"
+					>Envoyer</button>
+				</form>
+			</div>
 		</div>
 	</template>
 
@@ -96,7 +195,7 @@ const handleSave = () => {
 				<label class="text-muted text-xs font-mono uppercase tracking-widest">Photo</label>
 				<div class="relative w-full aspect-video rounded-2xl overflow-hidden bg-surface border border-[var(--border)]">
 					<img
-						:src="imagePreview ?? (post.image ? `${apiUrl}/storage/${post.image}` : null)"
+						:src="imagePreview ?? (post.image ? `${apiUrl}/storage/${post.image}` : undefined)"
 						v-if="imagePreview || post.image"
 						class="w-full h-full object-cover"
 					/>

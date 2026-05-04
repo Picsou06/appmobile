@@ -4,6 +4,8 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\PostController;
 use App\Http\Controllers\Api\UserController;
 use App\Http\Controllers\Api\AdController;
+use App\Http\Controllers\Api\LikeController;
+use App\Http\Controllers\Api\CommentController;
 
 Route::get('/ping', function () {
   return response()->json([
@@ -40,4 +42,7 @@ Route::middleware('auth:sanctum')->group(function () {
 	Route::post('/ads/{id}', [AdController::class, 'update']);
 	Route::delete('/ads/{id}', [AdController::class, 'destroy']);
 	Route::get('/user/ads', [AdController::class, 'myAds']);
+
+	Route::post('/posts/{id}/like', [LikeController::class, 'toggle']);
+	Route::post('/posts/{id}/comments', [CommentController::class, 'store']);
 });
