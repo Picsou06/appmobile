@@ -97,7 +97,7 @@ export const usePosts = () => {
 
   const loadPost = async (postId: string | number) => {
     currentPost.value = null
-    const res = await api(`${apiUrl}/api/users/posts/${postId}`)
+    const res = await api(`${apiUrl}/api/posts/${postId}`)
     currentPost.value = res.data ?? res
   }
 

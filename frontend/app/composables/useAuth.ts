@@ -9,6 +9,24 @@ export const useAuth = () => {
 
   const apiUrl = useApiUrl()
 
+  const register = async (firstname: string, lastname: string, email: string, password: string, passwordConfirmation: string) => {
+    try {
+      const res = await fetch(`${apiUrl}/api/register`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ firstname, lastname, email, password, password_confirmation: passwordConfirmation })
+      })
+      const data = await res.json()
+      if (!res.ok) return { success: false, message: data.message ?? 'Inscription échouée' }
+      token.value = data.token
+      user.value  = data.user
+      localStorage.setItem('token', data.token)
+      return { success: true }
+    } catch (e: any) {
+      return { success: false, message: e.message }
+    }
+  }
+
   const login = async (email: string, password: string) => {
     const url = `${apiUrl}/api/login`
     console.log(`[AppMobile] login() → POST ${url}`)
@@ -87,6 +105,7 @@ export const useAuth = () => {
   return {
     user,
     token,
+    register,
     login,
     logout,
     fetchUser

@@ -1,140 +1,220 @@
-# Guide de navigation — AppMobile
+# AppMobile
+
+Réseau social local géolocalisé — IUT INFO 2ème année, 2025-2026.
+
+**Stack :** Nuxt 4 + Capacitor (Android) · Laravel 11 + Sanctum · MySQL · Docker
 
 ---
 
-## Connexion
+## Installation
 
-**Page :** `/login`
+### Prérequis
 
-Au lancement de l'app, vous arrivez directement sur la page de connexion si vous n'êtes pas connecté. Remplissez votre email et mot de passe, puis appuyez sur **Se connecter**.
+- Docker Desktop avec intégration WSL 2 activée
+- Node.js ≥ 20 dans WSL (`node -v`)
+- Android Studio (optionnel, pour le build mobile)
 
----
-
-## Accueil — Feed
-
-**Page :** `/`
-
-C'est la page principale après connexion. Vous y voyez le fil d'actualité avec les posts des autres utilisateurs et des annonces intercalées.
-
----
-
-## Créer un post
-
-**Page :** `/post/create`
-
-Depuis l'**Accueil**, cliquez sur le **bouton rond `+`** en bas à droite de l'écran. Vous pouvez ajouter un titre, une description et une photo (optionnelle).
-
----
-
-## Voir le détail d'un post
-
-**Page :** `/post/[id]`
-
-Depuis l'**Accueil**, cliquez sur n'importe quel post dans le feed pour l'ouvrir en plein écran. Si vous êtes l'auteur du post, un **bouton crayon** apparaît en haut à droite pour le modifier.
-
----
-
-## Voir le profil d'un utilisateur
-
-**Page :** `/user/[id]`
-
-- Depuis un post du feed, cliquez sur le **nom ou l'avatar** de l'auteur du post.
-- Depuis le menu en haut à droite (bulle avatar), cliquez sur **Mon Compte** pour voir votre propre profil.
-
----
-
-## Annonces
-
-**Page :** `/ads`
-
-Ouvrez le menu en cliquant sur votre **bulle avatar** (en haut à droite), puis sélectionnez **Annonces**. Vous voyez toutes les annonces à proximité.
-
-Depuis cette page, trois boutons sont disponibles en haut :
-
-| Bouton | Destination |
-|---|---|
-| **Ajouter** | Créer une nouvelle annonce |
-| **Mes annonces** | Voir et gérer vos propres annonces |
-| **🗺 Carte** | Voir les annonces sur une carte interactive |
-
----
-
-## Créer une annonce
-
-**Page :** `/ads/create`
-
-Depuis la page **Annonces**, cliquez sur le bouton **Ajouter**. Remplissez le titre, la ville, les coordonnées GPS et la description.
-
----
-
-## Mes annonces
-
-**Page :** `/ads/my`
-
-Depuis la page **Annonces**, cliquez sur **Mes annonces**. Vous voyez la liste de vos annonces publiées. Pour en modifier une, cliquez sur le bouton **Modifier** à droite de l'annonce.
-
----
-
-## Carte des annonces
-
-**Page :** `/ads/map`
-
-Depuis la page **Annonces**, cliquez sur **🗺 Carte**. La carte affiche votre position (point bleu) et les épingles des annonces autour de vous. Cliquez sur une épingle pour voir l'annonce et calculer l'itinéraire depuis votre position.
-
----
-
-## Paramètres
-
-**Page :** `/settings`
-
-Cliquez sur votre **bulle avatar** en haut à droite, puis sur **Paramètres**. Vous pouvez y modifier :
-
-- Votre prénom / nom / email
-- Votre mot de passe
-- Votre photo de profil (avatar)
-
----
-
-## Déconnexion
-
-Cliquez sur votre **bulle avatar** en haut à droite, puis sur **Déconnexion** (en rouge en bas du menu).
-
----
-
-## Tester le système de notifications
-
-Les notifications sont déclenchées par **polling** : l'app interroge l'API toutes les **30 secondes** et envoie une notification locale si un nouveau like ou commentaire est détecté sur vos posts.
-
-### Commande Artisan — simuler un like
-
-Depuis le dossier `api/`, lancez la commande interactive :
+### 1. Cloner le dépôt
 
 ```bash
-cd api
-php artisan app:send-notification
+git clone https://github.com/Picsou06/appmobile.git
+cd appmobile
 ```
 
-La commande affiche la liste des utilisateurs et des posts, puis demande :
-1. **L'ID de l'utilisateur** qui ajoute le like (l'acteur)
-2. **L'ID du post** à liker
+### 2. Créer les fichiers `.env`
 
-Elle ajoute (ou supprime si déjà présent) le like en base. L'auteur du post recevra la notification au prochain cycle de polling (max 30 s).
-
-> Si vous relancez la commande avec les mêmes IDs, elle **supprime** le like (toggle), ce qui permet de tester aussi la disparition.
-
-### Tester un like via l'API REST
+**`api/.env`** — copier depuis l'exemple :
 
 ```bash
-# Remplacez <TOKEN> par le Bearer token de l'utilisateur connecté
-# et <POST_ID> par l'ID du post à liker
+cp api/.env.example api/.env
+```
 
+Vérifier que ces valeurs correspondent au `docker-compose.yml` :
+
+```
+DB_CONNECTION=mysql
+DB_HOST=db
+DB_PORT=3306
+DB_DATABASE=app
+DB_USERNAME=user
+DB_PASSWORD=password
+```
+
+**`frontend/.env`** — créer manuellement :
+
+```
+APP_NAME=AppMobile
+APP_ENV=web
+WEBAPI_URL=http://localhost:8000
+APPAPI_URL=http://10.0.2.2:8000
+GOOGLE_MAPS_API_KEY=VOTRE_CLE_ICI
+```
+
+> Pour obtenir une clé Google Maps : [console.cloud.google.com](https://console.cloud.google.com) → APIs & Services → Activer Maps SDK for Android + Maps JavaScript API + Routes API.
+
+### 3. Lancer Docker
+
+```bash
+docker compose up -d
+```
+
+### 4. Initialiser la base de données
+
+```bash
+docker compose exec api php artisan key:generate
+docker compose exec api php artisan migrate --seed
+docker compose exec api php artisan storage:link
+```
+
+### 5. URLs d'accès
+
+| Service | URL |
+|---|---|
+| Frontend (web) | http://localhost:3000 |
+| API Laravel | http://localhost:8000 |
+| PhpMyAdmin | http://localhost:8080 |
+
+---
+
+## Compte de test
+
+| Email | Mot de passe |
+|---|---|
+| `test@test.com` | `password` |
+
+> Tous les comptes générés par le seeder ont le mot de passe `password`. Les emails des autres comptes sont visibles dans PhpMyAdmin (`http://localhost:8080`).
+
+---
+
+## Données générées par le seeder
+
+| Table | Quantité | Détail |
+|---|---|---|
+| `users` | 10 | 1 compte fixe (`test@test.com`) + 9 aléatoires |
+| `posts` | 50 | Textes Faker, répartis entre les users |
+| `ads` | 32 | 4 annonces × 8 villes (Paris, Lyon, Marseille, Nice, Bordeaux, Toulouse, Nantes, Strasbourg) |
+
+---
+
+## Architecture du projet
+
+```
+appmobile/
+├── docker-compose.yml
+├── api/                        → Laravel 11 (API REST + Sanctum)
+│   ├── app/Http/Controllers/Api/
+│   │   ├── UserController.php  → auth, profil, avatar
+│   │   ├── PostController.php  → CRUD posts + likes/comments
+│   │   ├── AdController.php    → CRUD annonces + distance GPS
+│   │   ├── LikeController.php  → toggle like
+│   │   └── CommentController.php
+│   ├── database/
+│   │   ├── migrations/         → users, posts, ads, likes, comments, tokens
+│   │   └── seeders/            → DatabaseSeeder + AdSeeder
+│   └── routes/api.php          → toutes les routes REST
+│
+└── frontend/                   → Nuxt 4 SPA + Capacitor
+    └── app/
+        ├── pages/              → login, index, post/, ads/, map, my-posts, settings
+        ├── components/         → AppHeader, PostCard, PostDetail, CardAd, AdForm…
+        ├── composables/        → useAuth, usePosts, useAds, useGeolocation,
+        │                          useShare, useNotifications, useImagePicker
+        └── layouts/            → default.vue (barre de navigation fixe)
+```
+
+---
+
+## Plugins Capacitor utilisés
+
+| Plugin | Usage dans l'app |
+|---|---|
+| `@capacitor/camera` | Photo de profil (avatar) et photo dans les posts — accès caméra ou galerie |
+| `@capacitor/geolocation` | Récupération de la position GPS pour les annonces et la carte |
+| `@capacitor/google-maps` | Carte interactive native avec marqueurs et itinéraire |
+| `@capacitor/share` | Partage d'un post via les apps natives (SMS, WhatsApp, etc.) |
+| `@capacitor/local-notifications` | Notifications locales pour les nouveaux likes et commentaires |
+
+---
+
+## Build Android (optionnel)
+
+```bash
+cd frontend
+
+# 1. Builder le SPA
+npm run build
+
+# 2. Synchroniser Capacitor
+npx cap sync android
+
+# 3. Copier vers Windows pour Android Studio
+npm run android
+```
+
+Puis ouvrir `C:/Users/<user>/Documents/appmobile-tp/android` dans Android Studio et lancer sur émulateur ou appareil.
+
+> Pour tester sur téléphone réel branché en USB :
+> ```bash
+> adb -s <device> reverse tcp:8000 tcp:8000
+> ```
+> Laisser `APP_ENV=web` dans `frontend/.env`.
+
+---
+
+## Fonctionnalités
+
+### Authentification
+- Inscription / Connexion / Déconnexion
+- Modification profil, mot de passe, avatar (caméra Capacitor)
+
+### Posts
+- Fil d'actualité avec pagination infinie
+- Création avec photo (caméra/galerie Capacitor)
+- Détail, modification, suppression (propriétaire uniquement)
+- Likes et commentaires en temps réel (optimistic UI)
+- Partage natif via Capacitor Share
+
+### Annonces géolocalisées
+- Listing trié par distance (fonction SQL `DISTANCE`)
+- Création avec bouton "Ma position GPS" (Capacitor Geolocation)
+- Détail, modification, suppression
+- Vue "Mes annonces"
+
+### Carte
+- Page `/map` : carte native Capacitor Google Maps
+- Marqueur utilisateur (point bleu) + marqueurs annonces
+- Clic sur marqueur → popup + calcul d'itinéraire (Google Routes API)
+- Tracé de l'itinéraire sur la carte (polyline)
+
+### Notifications locales
+- Déclenchées par polling toutes les 30 secondes
+- Nouveau like sur un de vos posts → notification `@capacitor/local-notifications`
+- Nouveau commentaire sur un de vos posts → notification
+
+---
+
+## Simuler les notifications
+
+Les notifications sont déclenchées par **polling** : l'app interroge l'API toutes les **30 secondes** et envoie une notification si un nouveau like ou commentaire est détecté sur vos posts.
+
+### Méthode 1 — Commande Artisan interactive
+
+```bash
+docker compose exec api php artisan app:send-notification
+```
+
+La commande liste les utilisateurs et posts, puis demande l'ID de l'acteur et l'ID du post à liker. L'auteur du post reçoit la notification au prochain cycle (max 30 s).
+
+> Relancer avec les mêmes IDs pour supprimer le like (toggle).
+
+### Méthode 2 — API REST directement
+
+```bash
+# Like (remplacer <TOKEN> et <POST_ID>)
 curl -X POST http://localhost:8000/api/posts/<POST_ID>/like \
   -H "Authorization: Bearer <TOKEN>"
-```
 
-### Tester un commentaire via l'API REST
-
-```bash
+# Commentaire
 curl -X POST http://localhost:8000/api/posts/<POST_ID>/comments \
   -H "Authorization: Bearer <TOKEN>" \
   -H "Content-Type: application/json" \
@@ -143,11 +223,37 @@ curl -X POST http://localhost:8000/api/posts/<POST_ID>/comments \
 
 ### Comportement attendu
 
-| Action | Notification reçue (par l'auteur du post) |
+| Action | Notification reçue |
 |---|---|
 | Quelqu'un like votre post | `Nouveau like 👍 — Quelqu'un a aimé « Titre »` |
-| Plusieurs likes en une fois | `Nouveau like 👍 — X personnes ont aimé « Titre »` |
 | Nouveau commentaire | `Nouveau commentaire 💬 — Nouveau commentaire sur « Titre »` |
-| Plusieurs commentaires | `Nouveau commentaire 💬 — X nouveaux commentaires sur « Titre »` |
 
-> Les notifications n'apparaissent **pas** si l'acteur du like/commentaire est le même que l'auteur du post (pas d'auto-notification).
+> Pas d'auto-notification : l'acteur et l'auteur doivent être des utilisateurs différents.
+
+---
+
+## Navigation dans l'app
+
+### Connexion / Inscription
+Page `/login` — formulaire avec toggle Connexion / Inscription.
+
+### Accueil — Feed
+Page `/` — fil d'actualité avec posts et annonces intercalées. Bouton `+` en bas à droite pour créer un post.
+
+### Détail d'un post
+Cliquer sur un post dans le feed → `/post/[id]`. Bouton crayon si vous êtes l'auteur.
+
+### Profil utilisateur
+Cliquer sur le nom/avatar d'un auteur → `/user/[id]`.
+
+### Mon Compte
+Menu burger (bulle avatar en haut à droite) → **Mon Compte** → `/my-posts` : vos posts avec votre profil.
+
+### Annonces
+Menu burger → **Annonces** → `/ads`. Boutons : Ajouter · Mes annonces · 🗺 Carte.
+
+### Carte
+Page `/map` — accessible depuis le menu burger ou le bouton Carte de la page Annonces.
+
+### Paramètres
+Menu burger → **Paramètres** → `/settings` : modifier profil, mot de passe, avatar.

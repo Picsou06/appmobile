@@ -73,6 +73,20 @@ class PostController extends Controller
 		return response()->json(['message' => 'Post supprimé.']);
 	}
 
+	public function show($id)
+	{
+		$post = Post::with(['user', 'comments.user'])
+			->withCount('likes')
+			->findOrFail($id);
+
+		$userId = auth('sanctum')->id();
+		$post->liked_by_me = $userId
+			? $post->likes()->where('user_id', $userId)->exists()
+			: false;
+
+		return response()->json(['data' => $post]);
+	}
+
 	public function posts($user_id)
 	{
 		return Post::with('user')->where('user_id', $user_id)->latest()->paginate(10);

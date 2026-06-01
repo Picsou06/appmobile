@@ -14,10 +14,11 @@ Route::get('/ping', function () {
   ]);
 });
 
-Route::apiResource('posts', PostController::class)->only(['index']);
+Route::apiResource('posts', PostController::class)->only(['index', 'show']);
 Route::get('/users/{user_id}/posts', [PostController::class, 'posts']);
 Route::get('/users/posts/{id}', [PostController::class, 'showPost']);
 
+Route::post('/register', [UserController::class, 'register']);
 Route::post('/login', [UserController::class, 'login'])->name('login');
 
 Route::get('/ads', [AdController::class, 'index']);

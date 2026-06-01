@@ -96,7 +96,7 @@ onUnmounted(() => {
           </div>
 
           <NuxtLink
-            :to="`/user/${user?.id}`"
+            to="/my-posts"
             class="menu-item"
             @click="closeMenu"
           >

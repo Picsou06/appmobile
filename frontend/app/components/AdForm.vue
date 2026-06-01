@@ -1,4 +1,22 @@
 <script setup>
+const { getPosition } = useGeolocation()
+const geoLoading = ref(false)
+const geoError   = ref('')
+
+const fillPosition = async () => {
+  geoLoading.value = true
+  geoError.value   = ''
+  try {
+    const pos = await getPosition()
+    lat.value = pos.lat
+    lng.value = pos.lng
+  } catch (e: any) {
+    geoError.value = e.message ?? 'Impossible de récupérer la position.'
+  } finally {
+    geoLoading.value = false
+  }
+}
+
 const props = defineProps({
   initial: {
     type: Object,
@@ -99,14 +117,31 @@ const submit = () => {
       <input v-model="city" type="text" placeholder="Ville" class="w-full bg-transparent text-body text-sm placeholder:text-faint outline-none" />
     </div>
 
-    <div class="grid grid-cols-2 gap-3">
-      <div class="flex flex-col gap-1 border border-[var(--border)] rounded-2xl bg-surface px-4 py-3">
-        <label class="text-muted text-xs font-mono uppercase tracking-widest">Latitude</label>
-        <input v-model.number="lat" type="number" step="any" placeholder="48.8566" class="w-full bg-transparent text-body text-sm placeholder:text-faint outline-none" />
-      </div>
-      <div class="flex flex-col gap-1 border border-[var(--border)] rounded-2xl bg-surface px-4 py-3">
-        <label class="text-muted text-xs font-mono uppercase tracking-widest">Longitude</label>
-        <input v-model.number="lng" type="number" step="any" placeholder="2.3522" class="w-full bg-transparent text-body text-sm placeholder:text-faint outline-none" />
+    <div class="flex flex-col gap-2">
+      <button
+        type="button"
+        @click="fillPosition"
+        :disabled="geoLoading"
+        class="flex items-center justify-center gap-2 h-11 rounded-2xl border border-[var(--border)] text-muted text-sm hover:text-body hover:border-[var(--border-hover)] transition-colors duration-150 disabled:opacity-50"
+      >
+        <span v-if="geoLoading" class="w-4 h-4 rounded-full border-2 border-[var(--border)] border-t-accent animate-spin" />
+        <svg v-else width="15" height="15" viewBox="0 0 24 24" fill="none">
+          <circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="1.5"/>
+          <path d="M12 2v3M12 19v3M2 12h3M19 12h3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+          <circle cx="12" cy="12" r="8" stroke="currentColor" stroke-width="1.5" opacity=".35"/>
+        </svg>
+        {{ geoLoading ? 'Localisation…' : 'Ma position GPS' }}
+      </button>
+      <p v-if="geoError" class="text-accent text-xs px-1">{{ geoError }}</p>
+      <div class="grid grid-cols-2 gap-3">
+        <div class="flex flex-col gap-1 border border-[var(--border)] rounded-2xl bg-surface px-4 py-3">
+          <label class="text-muted text-xs font-mono uppercase tracking-widest">Latitude</label>
+          <input v-model.number="lat" type="number" step="any" placeholder="48.8566" class="w-full bg-transparent text-body text-sm placeholder:text-faint outline-none" />
+        </div>
+        <div class="flex flex-col gap-1 border border-[var(--border)] rounded-2xl bg-surface px-4 py-3">
+          <label class="text-muted text-xs font-mono uppercase tracking-widest">Longitude</label>
+          <input v-model.number="lng" type="number" step="any" placeholder="2.3522" class="w-full bg-transparent text-body text-sm placeholder:text-faint outline-none" />
+        </div>
       </div>
     </div>
 

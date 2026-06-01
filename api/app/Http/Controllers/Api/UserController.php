@@ -10,6 +10,27 @@ use Illuminate\Support\Facades\Hash;
 
 class UserController extends Controller
 {
+    public function register(Request $request)
+    {
+        $validated = $request->validate([
+            'firstname' => 'required|string|max:255',
+            'lastname'  => 'required|string|max:255',
+            'email'     => 'required|email|unique:users,email',
+            'password'  => 'required|min:6|confirmed',
+        ]);
+
+        $user = User::create([
+            'firstname' => $validated['firstname'],
+            'lastname'  => $validated['lastname'],
+            'email'     => $validated['email'],
+            'password'  => Hash::make($validated['password']),
+        ]);
+
+        $token = $user->createToken('mobile-token')->plainTextToken;
+
+        return response()->json(['user' => $user, 'token' => $token], 201);
+    }
+
     public function login(Request $request)
     {
         $request->validate([

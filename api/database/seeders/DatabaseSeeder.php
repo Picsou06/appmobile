@@ -16,7 +16,14 @@ class DatabaseSeeder extends Seeder
 	 */
 	public function run(): void
 	{
-		$users = User::factory(10)->create();
+		$testUser = User::factory()->create([
+			'firstname' => 'Test',
+			'lastname'  => 'User',
+			'email'     => 'test@test.com',
+		]);
+
+		$users = User::factory(9)->create()->prepend($testUser);
+
 		Post::factory(50)->create()->each(function ($post) use ($users) {
             $post->user_id = $users->random()->id;
             $post->save();
