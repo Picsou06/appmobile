@@ -96,29 +96,6 @@ onUnmounted(() => {
           </div>
 
           <NuxtLink
-            to="/my-posts"
-            class="menu-item"
-            @click="closeMenu"
-          >
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" class="text-muted shrink-0">
-              <circle cx="12" cy="8" r="4" stroke="currentColor" stroke-width="1.5" />
-              <path d="M4 20c0-4 3.6-7 8-7s8 3 8 7" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" />
-            </svg>
-            Mon Compte
-          </NuxtLink>
-
-          <NuxtLink
-            to="/ads"
-            class="menu-item"
-            @click="closeMenu"
-          >
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" class="text-muted shrink-0">
-              <path d="M3 5h18M3 10h18M3 15h12M3 20h8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" />
-            </svg>
-            Annonces
-          </NuxtLink>
-
-          <NuxtLink
             to="/settings"
             class="menu-item"
             @click="closeMenu"

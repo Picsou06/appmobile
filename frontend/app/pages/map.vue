@@ -1,5 +1,5 @@
 <script setup lang="ts">
-definePageMeta({ middleware: 'auth', layout: false })
+definePageMeta({ middleware: 'auth' })
 
 const config = useRuntimeConfig()
 const { getPosition }     = useGeolocation()
@@ -201,9 +201,9 @@ onUnmounted(() => {
 
 
 <template>
-  <div class="flex flex-col" style="height: 100dvh;">
+  <div class="flex flex-col" style="height: calc(100dvh - 56px - var(--sab))">
 
-    <AppHeader title="Carte" back />
+    <AppHeader title="Carte" />
 
     <div v-if="error" class="flex-1 flex flex-col items-center justify-center gap-4 p-6">
       <p class="text-accent text-sm text-center">{{ error }}</p>

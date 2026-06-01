@@ -10,7 +10,7 @@ const fillPosition = async () => {
     const pos = await getPosition()
     lat.value = pos.lat
     lng.value = pos.lng
-  } catch (e: any) {
+  } catch (e) {
     geoError.value = e.message ?? 'Impossible de récupérer la position.'
   } finally {
     geoLoading.value = false
